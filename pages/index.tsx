@@ -57,7 +57,7 @@ export default function Home() {
   return (
     <div>
       <Head>
-        <title>Create Next App</title>
+        <title>Marv Chatbot</title>
         <meta name="description" content="A test app for open AI APIs" />
         <link rel="icon" href="/favicon.ico" />
       </Head>
