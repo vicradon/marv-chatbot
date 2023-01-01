@@ -1,6 +1,5 @@
 import Head from "next/head";
 import { useEffect, useState } from "react";
-import { Configuration, OpenAIApi } from "openai";
 import {
   FormControl,
   Input,
@@ -13,12 +12,7 @@ import {
   RadioGroup,
 } from "@chakra-ui/react";
 
-const configuration = new Configuration({
-  apiKey: process.env.NEXT_PUBLIC_OPENAI_API_KEY,
-});
-const openai = new OpenAIApi(configuration);
-
-type ConversationTone = "sarcastic" | "dirty" | "weird" | "scientific";
+type ConversationTone = "sarcastic" | "naughty" | "weird" | "scientific";
 
 export default function Home() {
   const [conversationTone, setConversationTone] =
@@ -30,7 +24,10 @@ export default function Home() {
 
   useEffect(() => {
     const firstResponse = `Marv is a chatbot that eagerly answers questions with very ${conversationTone} responses:`;
-    setConversation([firstResponse, ...conversation.slice(1)]);
+    setConversation((prevConversation) => [
+      firstResponse,
+      ...prevConversation.slice(1),
+    ]);
   }, [conversationTone]);
 
   const handleSubmit = async (event) => {
@@ -40,16 +37,15 @@ export default function Home() {
     const prompt = newConversation.join("\n");
     setQuestion("");
 
-    const response = await openai.createCompletion({
-      model: "text-davinci-003",
-      prompt: prompt,
-      temperature: 0.5,
-      max_tokens: 60,
-      top_p: 0.3,
-      frequency_penalty: 0.5,
-      presence_penalty: 0.0,
-    });
-    const marvResponse = response.data.choices[0].text;
+    const { responseData } = await fetch("/api/call", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ prompt }),
+    }).then((res) => res.json());
+
+    const marvResponse = responseData.choices[0].text;
     newConversation[newConversation.length - 1] = `Marv: ${marvResponse}`;
     setConversation([...newConversation]);
   };
@@ -77,7 +73,7 @@ export default function Home() {
             >
               <Flex columnGap={"1rem"} flexWrap={"wrap"}>
                 <Radio value="sarcastic">sarcastic</Radio>
-                <Radio value="dirty">dirty</Radio>
+                <Radio value="naughty">naughty</Radio>
                 <Radio value="weird">weird</Radio>
                 <Radio value="scientific">scientific</Radio>
               </Flex>
